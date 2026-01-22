@@ -41,3 +41,12 @@ export interface ColorData {
   name: string;
   class: string;
 }
+
+export type RemoteRole = 'controller' | 'display' | 'idle';
+
+export interface Device {
+  id: string;
+  name: string;
+  role: RemoteRole;
+  lastSeen: number;
+}
