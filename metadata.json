@@ -1,0 +1,7 @@
+{
+  "name": "Training Tools",
+  "description": "A collection of mental fitness and training tools including Stroop effect, mental math, and audio utilities.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
