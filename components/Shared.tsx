@@ -1,21 +1,24 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import ArrowLeft from 'lucide-react/dist/esm/icons/arrow-left';
 
-// Layout
 export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const isHome = window.location.hash === '#/';
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
   return (
-    <div className="min-h-screen bg-background text-textPrimary font-sans p-4 sm:p-6 pb-20">
-      <div className="max-w-4xl mx-auto relative">
+    <div className="min-h-screen bg-background text-textPrimary font-sans selection:bg-primary/30">
+      <div className="max-w-3xl mx-auto px-4 py-6 md:py-12">
         {!isHome && (
           <button 
-            onClick={() => navigate('/')} 
-            className="mb-6 flex items-center gap-2 text-textSecondary hover:text-primary transition-colors font-medium"
+            onClick={() => navigate('/')}
+            className="mb-8 flex items-center text-textSecondary hover:text-white transition-colors group"
           >
-            <ArrowLeft size={20} /> Zurück
+            <div className="p-2 rounded-full bg-surface group-hover:bg-surfaceHover mr-3 transition-colors">
+              <ArrowLeft size={20} />
+            </div>
+            <span className="font-bold tracking-wide text-sm uppercase">Zurück</span>
           </button>
         )}
         {children}
@@ -24,9 +27,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   );
 };
 
-// Button
+export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ className, children, ...props }) => {
+  return (
+    <div className={`bg-surface rounded-3xl border border-white/5 p-6 md:p-8 shadow-xl ${className || ''}`} {...props}>
+      {children}
+    </div>
+  );
+};
+
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -34,26 +44,27 @@ export const Button: React.FC<ButtonProps> = ({
   children, 
   variant = 'primary', 
   size = 'md', 
-  className = '', 
+  className, 
   ...props 
 }) => {
-  const baseStyles = "rounded-xl font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none";
+  const baseStyle = "font-bold rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center";
   
   const variants = {
     primary: "bg-primary hover:bg-primaryHover text-white shadow-lg shadow-primary/20",
-    secondary: "bg-surfaceHover hover:bg-white/20 text-textPrimary",
-    outline: "border-2 border-primary text-primary hover:bg-primary/10"
+    secondary: "bg-surfaceHover hover:bg-white/10 text-white",
+    outline: "border-2 border-primary text-primary hover:bg-primary/10",
+    ghost: "hover:bg-white/5 text-textSecondary hover:text-white"
   };
 
   const sizes = {
-    sm: "px-3 py-1.5 text-sm",
-    md: "px-5 py-2.5 text-base",
-    lg: "px-6 py-4 text-lg w-full"
+    sm: "px-4 py-2 text-sm",
+    md: "px-6 py-3",
+    lg: "px-8 py-4 text-lg"
   };
 
   return (
     <button 
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`} 
+      className={`${baseStyle} ${variants[variant]} ${sizes[size]} ${className || ''}`} 
       {...props}
     >
       {children}
@@ -61,34 +72,30 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-// Card
-export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className = '', ...props }) => {
-  return (
-    <div className={`bg-surface rounded-2xl p-6 border border-white/5 ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
-
-// Slider
 interface SliderProps {
   label: string;
   value: number;
   min: number;
   max: number;
   step?: number;
-  onChange: (val: number) => void;
-  formatValue?: (val: number) => string;
+  onChange: (value: number) => void;
+  formatValue?: (value: number) => string;
 }
 
 export const Slider: React.FC<SliderProps> = ({ 
-  label, value, min, max, step = 1, onChange, formatValue 
+  label, 
+  value, 
+  min, 
+  max, 
+  step = 1, 
+  onChange,
+  formatValue
 }) => {
   return (
-    <div className="space-y-3">
-      <div className="flex justify-between items-baseline">
-        <label className="text-sm font-bold text-textSecondary uppercase tracking-wide">{label}</label>
-        <span className="font-mono font-bold text-primary">
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <label className="text-sm font-bold text-textSecondary uppercase tracking-widest">{label}</label>
+        <span className="font-mono font-bold text-primary bg-primary/10 px-3 py-1 rounded-lg tabular-nums">
           {formatValue ? formatValue(value) : value}
         </span>
       </div>
@@ -99,13 +106,12 @@ export const Slider: React.FC<SliderProps> = ({
         step={step}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 bg-surfaceHover rounded-full appearance-none cursor-pointer accent-primary"
+        className="w-full h-3 bg-surfaceHover rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
       />
     </div>
   );
 };
 
-// Toggle
 interface ToggleProps {
   label: string;
   description?: string;
@@ -115,89 +121,48 @@ interface ToggleProps {
 
 export const Toggle: React.FC<ToggleProps> = ({ label, description, checked, onChange }) => {
   return (
-    <div className="flex items-center justify-between cursor-pointer group" onClick={() => onChange(!checked)}>
+    <div className="flex items-center justify-between group cursor-pointer" onClick={() => onChange(!checked)}>
       <div>
-        <div className="font-bold text-textPrimary group-hover:text-white transition-colors">{label}</div>
-        {description && <div className="text-xs text-textSecondary mt-0.5">{description}</div>}
+        <div className="font-bold text-white group-hover:text-primary transition-colors">{label}</div>
+        {description && <div className="text-sm text-textSecondary mt-1">{description}</div>}
       </div>
-      <div className={`w-12 h-7 rounded-full transition-colors relative ${checked ? 'bg-primary' : 'bg-surfaceHover'}`}>
-        <div className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white transition-transform shadow-sm ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
-      </div>
-    </div>
-  );
-};
-
-// NumberStepper
-interface NumberStepperProps {
-  label: string;
-  value: number;
-  min?: number;
-  max?: number;
-  step?: number;
-  onChange: (val: number) => void;
-}
-
-export const NumberStepper: React.FC<NumberStepperProps> = ({ 
-  label, value, min = 0, max = 100, step = 1, onChange 
-}) => {
-  return (
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-xs font-bold text-textSecondary uppercase tracking-widest">{label}</span>
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => onChange(Math.max(min, value - step))}
-          className="w-10 h-10 rounded-full bg-surfaceHover border border-white/10 text-xl font-bold hover:bg-white/10 transition-colors flex items-center justify-center"
-        >
-          -
-        </button>
-        <div className="text-2xl font-bold font-mono tabular-nums text-textPrimary min-w-[3ch] text-center">
-          {value}
-        </div>
-        <button
-          onClick={() => onChange(Math.min(max, value + step))}
-          className="w-10 h-10 rounded-full bg-surfaceHover border border-white/10 text-xl font-bold hover:bg-white/10 transition-colors flex items-center justify-center"
-        >
-          +
-        </button>
+      <div className={`w-14 h-8 rounded-full p-1 transition-colors duration-300 ${checked ? 'bg-primary' : 'bg-surfaceHover'}`}>
+        <div className={`w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ${checked ? 'translate-x-6' : 'translate-x-0'}`} />
       </div>
     </div>
   );
 };
 
-// FullscreenOverlay
-interface FullscreenOverlayProps {
-  children: React.ReactNode;
-  onExit: () => void;
-  className?: string;
-}
-
-export const FullscreenOverlay: React.FC<FullscreenOverlayProps> = ({ children, onExit, className = '' }) => {
+export const FullscreenOverlay: React.FC<{ children: React.ReactNode, onExit: () => void, className?: string }> = ({ children, onExit, className }) => {
   return (
-    <div className={`fixed inset-0 z-50 flex flex-col items-center justify-center ${className}`}>
-      {children}
+    <div className={`fixed inset-0 z-50 flex items-center justify-center animate-enter-scale ${className || 'bg-background'}`}>
       <button 
         onClick={onExit}
-        className="absolute top-6 right-6 p-4 rounded-full bg-black/20 text-white/70 hover:bg-black/40 hover:text-white transition-colors z-[60]"
+        className="absolute top-6 right-6 p-4 rounded-full bg-black/20 hover:bg-black/40 text-white/50 hover:text-white transition-all backdrop-blur-sm z-50 group"
       >
-        <ArrowLeft size={32} />
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:rotate-90 transition-transform">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
+      {children}
     </div>
   );
 };
 
-// AudioLevelBar
-export const AudioLevelBar: React.FC<{ level: number; threshold: number }> = ({ level, threshold }) => {
+export const AudioLevelBar: React.FC<{ level: number, threshold: number }> = ({ level, threshold }) => {
   return (
-    <div className="h-6 bg-surfaceHover rounded-full overflow-hidden relative border border-white/5">
+    <div className="h-4 bg-surfaceHover rounded-full overflow-hidden relative">
       {/* Threshold Marker */}
       <div 
-        className="absolute top-0 bottom-0 w-1 bg-red-500 z-10 opacity-70"
+        className="absolute top-0 bottom-0 w-1 bg-white/20 z-10"
         style={{ left: `${threshold}%` }}
       />
+      
       {/* Level Bar */}
       <div 
-        className="h-full bg-gradient-to-r from-green-500 to-primary transition-all duration-75 ease-out"
-        style={{ width: `${level}%` }}
+        className={`h-full transition-all duration-75 ease-out ${level > threshold ? 'bg-emerald-500' : 'bg-primary'}`}
+        style={{ width: `${Math.min(100, level)}%` }}
       />
     </div>
   );
